@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Webcam Auto Capture</title>
+</head>
+<body>
+  <h2>Quiz Webcam Auto Capture</h2>
+  <p>Allow camera access to start capturing images automatically.</p>
+  <video id="webcam" width="400" height="300" autoplay></video>
+  <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Access webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => video.srcObject = stream)
+      .catch(err => alert("Cannot access webcam: " + err));
+
+    // Function to capture image and send to server
+    async function captureAndUpload() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL('image/png');
+
+      try {
+        await fetch('YOUR_COLAB_URL', { // Replace with Colab ngrok URL
+          method: 'POST',
+          body: JSON.stringify({ image: dataURL }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        console.log('Image uploaded at', new Date());
+      } catch (err) {
+        console.error('Upload failed', err);
+      }
+    }
+
+    // Auto capture every 5 seconds
+    setInterval(captureAndUpload, 5000);
+  </script>
+</body>
+</html>
