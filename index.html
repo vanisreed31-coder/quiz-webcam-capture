@@ -1,49 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Quiz Webcam Auto Capture</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz with Webcam Capture</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    video {
+      margin-top: 20px;
+      border: 3px solid #4CAF50;
+      border-radius: 10px;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-  <h2>Quiz Webcam Auto Capture</h2>
-  <p>Allow camera access to start capturing images automatically.</p>
+  <h1>Quiz Webcam Capture</h1>
+  <p id="status">Waiting for camera access...</p>
+
   <video id="webcam" width="400" height="300" autoplay></video>
-  <script>
-  const video = document.getElementById('webcam');
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => video.srcObject = stream)
-    .catch(err => alert("Cannot access webcam: " + err));
-</script>
-  <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
 
   <script>
     const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('status');
 
-    // Access webcam
+    // Ask for camera permission
     navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => video.srcObject = stream)
-      .catch(err => alert("Cannot access webcam: " + err));
-
-    // Function to capture image and send to server
-    async function captureAndUpload() {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataURL = canvas.toDataURL('image/png');
-
-      try {
-        await fetch('https://mireille-laterigrade-marjorie.ngrok-free.dev', { // Replace with Colab ngrok URL
-          method: 'POST',
-          body: JSON.stringify({ image: dataURL }),
-          headers: { 'Content-Type': 'application/json' }
-        });
-        console.log('Image uploaded at', new Date());
-      } catch (err) {
-        console.error('Upload failed', err);
-      }
-    }
-
-    // Auto capture every 5 seconds
-    setInterval(captureAndUpload, 5000);
+      .then(stream => {
+        video.srcObject = stream;
+        statusText.textContent = "✅ Camera connected successfully!";
+      })
+      .catch(err => {
+        console.error(err);
+        statusText.textContent = "❌ Cannot access webcam. Please allow camera access and reload.";
+        alert("Error: " + err.message);
+      });
   </script>
 </body>
 </html>
